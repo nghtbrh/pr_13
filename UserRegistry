@@ -1,0 +1,204 @@
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.function.Predicate;
+
+public class UserRegistry {
+
+    private HashMap<UserIdentifier, User> users = new HashMap<>();
+    private int nextId = 1;
+
+    public void registerUser(String login, String password) {
+
+        for (User user : users.values()) {
+
+            if (user.getIdentifier().getName().equals(login)) {
+                System.out.println("користувач " + login + " вже є у списку");
+                return;
+            }
+        }
+
+        UserIdentifier identifier =
+                new UserIdentifier(nextId, login);
+
+        User user = new User(identifier, password);
+
+        users.put(identifier, user);
+
+        nextId++;
+
+        System.out.println("користувач зареєстрований");
+    }
+
+    public void loginUser(String login, String password) {
+
+        for (User user : users.values()) {
+
+            if (user.getIdentifier().getName().equals(login)
+                    && user.getPassword().equals(password)) {
+
+                user.setLoggedIn(true);
+                user.setLastLoginDate(LocalDateTime.now());
+
+                System.out.println("вхід виконано");
+                return;
+            }
+        }
+
+        System.out.println("неможливо ідентифікувати або аутентифікувати користувача");
+    }
+
+    public void logoutUser(int userId) {
+
+        for (User user : users.values()) {
+
+            if (user.getIdentifier().getId() == userId) {
+
+                user.setLoggedIn(false);
+
+                System.out.println("користувач вийшов");
+                return;
+            }
+        }
+
+        System.out.println("користувача не знайдено");
+    }
+
+    public boolean isUserRegistered(String login) {
+
+        for (User user : users.values()) {
+
+            if (user.getIdentifier().getName().equals(login)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void removeUser(int id) {
+
+        UserIdentifier keyToRemove = null;
+
+        for (Map.Entry<UserIdentifier, User> entry : users.entrySet()) {
+
+            if (entry.getKey().getId() == id) {
+                keyToRemove = entry.getKey();
+                break;
+            }
+        }
+
+        if (keyToRemove != null) {
+
+            users.remove(keyToRemove);
+
+            System.out.println("користувач видалений");
+
+        } else {
+
+            System.out.println("користувача не знайдено");
+        }
+    }
+
+    public void printTotalUniqueUsers() {
+        System.out.println("кількість користувачів: " + users.size());
+    }
+
+    public LinkedList<User> getUserList() {
+
+        LinkedList<User> list = new LinkedList<>();
+
+        for (User user : users.values()) {
+            list.add(user);
+        }
+
+        return list;
+    }
+
+    public LinkedList<User> getInOrder(Comparator<User> comparator) {
+
+        LinkedList<User> list = getUserList();
+
+        list.sort(comparator);
+
+        return list;
+    }
+
+    public LinkedList<User> getFiltered(Predicate<User> predicate) {
+
+        LinkedList<User> result = new LinkedList<>();
+
+        for (User user : users.values()) {
+
+            if (predicate.test(user)) {
+                result.add(user);
+            }
+        }
+
+        return result;
+    }
+
+    public void displayAllUsers() {
+
+        System.out.println("список користувачів:");
+
+        for (User user : users.values()) {
+            System.out.println(user);
+        }
+    }
+
+    public void saveToFile(String fileName) {
+
+        try (ObjectOutputStream output =
+                     new ObjectOutputStream(
+                             new FileOutputStream(fileName))) {
+
+            output.writeObject(users);
+
+            System.out.println("дані збережено");
+
+        } catch (IOException e) {
+
+            System.out.println("помилка збереження");
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public void loadFromFile(String fileName) {
+
+        try (ObjectInputStream input =
+                     new ObjectInputStream(
+                             new FileInputStream(fileName))) {
+
+            users =
+                    (HashMap<UserIdentifier, User>)
+                            input.readObject();
+
+            int maxId = 0;
+
+            for (User user : users.values()) {
+
+                user.setLoggedIn(false);
+
+                if (user.getIdentifier().getId() > maxId) {
+                    maxId = user.getIdentifier().getId();
+                }
+            }
+
+            nextId = maxId + 1;
+
+            System.out.println("дані відновлено");
+
+        } catch (IOException | ClassNotFoundException e) {
+
+            System.out.println("помилка завантаження");
+        }
+    }
+}
