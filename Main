@@ -1,0 +1,155 @@
+import java.util.LinkedList;
+import java.util.Scanner;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Scanner scanner = new Scanner(System.in);
+
+        UserRegistry registry = new UserRegistry();
+
+        System.out.print("відновити базу користувачів? (так/ні): ");
+        String answer = scanner.nextLine();
+
+        if (answer.equalsIgnoreCase("так")) {
+
+            System.out.print("шлях до файлу: ");
+            String path = scanner.nextLine();
+
+            registry.loadFromFile(path);
+        }
+
+        while (true) {
+
+            System.out.println("\nменю");
+            System.out.println("1 - реєстрація");
+            System.out.println("2 - вхід");
+            System.out.println("3 - вихід");
+            System.out.println("4 - перевірка користувача");
+            System.out.println("5 - видалення користувача");
+            System.out.println("6 - кількість користувачів");
+            System.out.println("7 - показати всіх");
+            System.out.println("8 - список за порядком");
+            System.out.println("9 - фільтрація");
+            System.out.println("0 - вихід");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (choice) {
+
+                case 1:
+
+                    System.out.print("логін: ");
+                    String login = scanner.nextLine();
+
+                    System.out.print("пароль: ");
+                    String password = scanner.nextLine();
+
+                    registry.registerUser(login, password);
+                    break;
+
+                case 2:
+
+                    System.out.print("логін: ");
+                    login = scanner.nextLine();
+
+                    System.out.print("пароль: ");
+                    password = scanner.nextLine();
+
+                    registry.loginUser(login, password);
+                    break;
+
+                case 3:
+
+                    System.out.print("id користувача: ");
+                    int id = scanner.nextInt();
+
+                    registry.logoutUser(id);
+                    break;
+
+                case 4:
+
+                    System.out.print("логін: ");
+                    login = scanner.nextLine();
+
+                    if (registry.isUserRegistered(login)) {
+                        System.out.println("користувач зареєстрований");
+                    } else {
+                        System.out.println("користувач не знайдений");
+                    }
+
+                    break;
+
+                case 5:
+
+                    System.out.print("id користувача: ");
+                    id = scanner.nextInt();
+
+                    registry.removeUser(id);
+                    break;
+
+                case 6:
+
+                    registry.printTotalUniqueUsers();
+                    break;
+
+                case 7:
+
+                    registry.displayAllUsers();
+                    break;
+
+                case 8:
+
+                    LinkedList<User> ordered =
+                            registry.getInOrder(
+                                    (u1, u2) ->
+                                            u1.getIdentifier().getName()
+                                                    .compareTo(
+                                                            u2.getIdentifier().getName()
+                                                    )
+                            );
+
+                    for (User user : ordered) {
+                        System.out.println(user);
+                    }
+
+                    break;
+
+                case 9:
+
+                    LinkedList<User> filtered =
+                            registry.getFiltered(
+                                    user -> user.isLoggedIn()
+                            );
+
+                    for (User user : filtered) {
+                        System.out.println(user);
+                    }
+
+                    break;
+
+                case 0:
+
+                    System.out.print("зберегти користувачів у файл? (так/ні): ");
+                    String answerSave = scanner.nextLine();
+
+                    if (answerSave.equalsIgnoreCase("так")) {
+
+                        System.out.print("шлях до файлу: ");
+                        String path = scanner.nextLine();
+
+                        registry.saveToFile(path);
+                    }
+
+                    System.out.println("програма завершена");
+                    return;
+
+                default:
+
+                    System.out.println("невірний вибір");
+            }
+        }
+    }
+}
