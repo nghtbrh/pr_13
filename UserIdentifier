@@ -1,0 +1,45 @@
+import java.io.Serializable;
+import java.util.Objects;
+
+public class UserIdentifier implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    private int id;
+    private String name;
+
+    public UserIdentifier(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if (this == obj) {
+            return true;
+        }
+
+        if (!(obj instanceof UserIdentifier)) {
+            return false;
+        }
+
+        UserIdentifier other = (UserIdentifier) obj;
+
+        return id == other.id &&
+                Objects.equals(name, other.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name);
+    }
+}
